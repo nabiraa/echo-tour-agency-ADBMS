@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const ConcertSchema = new mongoose.Schema({
   concertId: { type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true }, // References Venue

@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const ArtistSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true }, // e.g., "AESPA" or "IU"
   type: { type: String, enum: ['group', 'soloist'], required: true },
