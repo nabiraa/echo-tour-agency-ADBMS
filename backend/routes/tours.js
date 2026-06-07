@@ -7,7 +7,7 @@ const Ticket = require('../models/Ticket');
 const User = require('../models/User');
 const Artist = require('../models/Artist');
 const Venue = require('../models/Venue');
-  
+
 // ─────────────────────────────────────────────
 // GET /api/tours
 // Returns all tours, populating artist name and
@@ -110,7 +110,10 @@ router.post('/:tourId/concerts/:concertId/book', async (req, res) => {
       }
 
       // STEP 2 — Locate the specific embedded concert sub-document
-      const concert = tour.concerts.id(concertId);
+    //   const concert = tour.concerts.id(concertId);
+      const concert = tour.concerts.find(
+          c => c.concertId?.toString() === concertId || c._id?.toString() === concertId
+        );
 
       if (!concert) {
         throw new Error('CONCERT_NOT_FOUND');
