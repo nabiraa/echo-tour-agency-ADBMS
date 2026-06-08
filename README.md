@@ -12,7 +12,23 @@ Before running this project, ensure you have **Node.js** and **npm** installed.
 
 ## 🛠️ Installation & Setup
 
-### 1. Backend Setup
+### 1. ENV Configuration File
+   1. Navigate to the backend folder
+        cd backend
+   2. Create a new file named ".env"
+   3. Paste the shared MongoDB connection string
+      PORT=5000
+      (string provided)
+      
+### 2. Backend Setup
 1. Navigate to the backend directory:
-   ```bash
-   cd backend
+   Run the following commands:
+      1. cd backend
+      2. npm install
+      3. node seedMore.js
+### 3. Frontend Setup
+1. Navigate to the frontend directory:
+   Run the following commands:
+      1. cd frontend
+      2. npm start
+   
