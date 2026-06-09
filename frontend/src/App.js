@@ -69,19 +69,24 @@ const Skeleton = ({ className = "" }) => (
 
 const BookingModal = ({ data, userRole, onClose, showToast, onSuccess }) => {
   const { tour, concert } = data;
-  const [category, setCategory] = useState("Standing");
   const [loading, setLoading] = useState(false);
 
   const handleBook = async () => {
     setLoading(true);
     try {
+      // seat assignment
+      const payload = {
+        userId: MOCK_USER_ID,
+        seatCategory: "Standing" 
+      };
+
       await axios.post(
         `${BASE_URL}/api/tours/${tour._id}/concerts/${concert.concertId}/book`,
-        { userId: MOCK_USER_ID, seatCategory: category },
-        { headers: { "x-user-role": userRole } }
+        payload
       );
-      showToast("Ticket Booked! 🎉 Enjoy the show!", "success");
-      onSuccess();
+
+      showToast("Ticket Booked! Enjoy the show!", "success");
+      if (typeof onSuccess === "function") onSuccess();
       onClose();
     } catch (err) {
       showToast(err?.response?.data?.message || "Booking failed. Try again.", "error");
@@ -91,73 +96,68 @@ const BookingModal = ({ data, userRole, onClose, showToast, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="bg-zinc-950 border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl shadow-violet-900/20 relative">
-        <button onClick={onClose} className="absolute top-5 right-5 text-white/40 hover:text-white transition-colors cursor-pointer">
-          <X size={20} />
-        </button>
-
-        <div className="mb-6">
-          <p className="text-violet-400 text-xs font-semibold uppercase tracking-widest mb-1">Booking Ticket</p>
-          <h2 className="text-2xl font-bold text-white">{tour.title}</h2>
-          <p className="text-white/50 text-sm mt-1">{tour.artist?.name}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-zinc-950 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        
+        {/* Modal Banner Header */}
+        <div className="relative bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-8 text-white">
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white/60 hover:text-white bg-black/20 hover:bg-black/40 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+          <span className="bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-sm mb-3 inline-block">
+            Checkout Confirmation
+          </span>
+          <h3 className="text-xl font-black leading-tight tracking-tight">{tour?.title}</h3>
+          <p className="text-white/70 text-sm mt-1">{tour?.artist?.name}</p>
         </div>
 
-        <div className="bg-white/5 rounded-2xl p-4 mb-6 space-y-2 border border-white/8">
-          <div className="flex items-center gap-2 text-white/70 text-sm">
-            <MapPin size={14} className="text-violet-400" />
-            <span>{concert.venue?.name}, {concert.venue?.city}</span>
+        {/* Content Details */}
+        <div className="p-6">
+          <div className="space-y-4 mb-6">
+            <div className="flex items-start gap-3 bg-white/3 border border-white/5 rounded-xl p-3.5">
+              <MapPin size={16} className="text-violet-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-white/40 font-medium uppercase tracking-wider">Venue Location</p>
+                <p className="text-sm text-white font-semibold mt-0.5">{concert?.venue?.name}</p>
+                <p className="text-xs text-white/60">{concert?.venue?.city}, {concert?.venue?.country}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 bg-white/3 border border-white/5 rounded-xl p-3.5">
+              <Calendar size={16} className="text-violet-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-white/40 font-medium uppercase tracking-wider">Event Date & Time</p>
+                <p className="text-sm text-white font-semibold mt-0.5">{fmt.date(concert?.date)}</p>
+              </div>
+            </div>
+
+            {/* Flat Single Ticket Tier Display */}
+            <div className="flex items-center justify-between bg-violet-500/5 border border-violet-500/10 rounded-xl p-4">
+              <div>
+                <p className="text-xs text-violet-300 font-bold uppercase tracking-wider">Ticket Tier</p>
+                <p className="text-base font-black text-white mt-0.5">General Admission</p>
+              </div>
+              <p className="text-2xl font-black text-emerald-400">{fmt.money(concert?.ticketPrice)}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-white/70 text-sm">
-            <Calendar size={14} className="text-violet-400" />
-            <span>{fmt.date(concert.date)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/70 text-sm">
-            <DollarSign size={14} className="text-violet-400" />
-            <span className="text-white font-bold text-base">${concert.ticketPrice} per ticket</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/70 text-sm">
-            <Users size={14} className="text-violet-400" />
-            <span>{concert.availableTickets?.toLocaleString()} seats remaining</span>
-          </div>
+
+          {/* Action Footer Button */}
+          <button
+            onClick={handleBook}
+            disabled={loading}
+            className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-violet-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <><Loader2 size={16} className="animate-spin" /> Processing Transaction...</>
+            ) : (
+              <><Ticket size={16} /> Purchase Pass</>
+            )}
+          </button>
         </div>
 
-        <div className="mb-6">
-          <p className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-3">Seat Category</p>
-          <div className="flex gap-2">
-            {["VIP", "Standing", "Seated"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`flex-1 py-2.5 rounded-full text-sm font-semibold border transition-all duration-200 cursor-pointer ${
-                  category === cat
-                    ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/30"
-                    : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/20"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          {category === "VIP" && (
-            <p className="text-amber-400/70 text-xs mt-2 flex items-center gap-1">
-              <Star size={11} /> Premium experience — front row access included
-            </p>
-          )}
-        </div>
-
-        <div className="bg-white/3 rounded-xl px-4 py-2.5 mb-6 border border-white/8">
-          <p className="text-white/30 text-xs">Mock Session User ID</p>
-          <p className="text-white/50 text-xs font-mono">{MOCK_USER_ID}</p>
-        </div>
-
-        <button
-          onClick={handleBook}
-          disabled={loading}
-          className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold py-3.5 rounded-full transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/30 cursor-pointer flex items-center justify-center gap-2"
-        >
-          {loading ? <><Loader2 size={16} className="animate-spin" /> Processing...</> : `Confirm Booking — ${fmt.money(concert.ticketPrice)}`}
-        </button>
       </div>
     </div>
   );
@@ -348,8 +348,8 @@ const TicketOfficeTab = ({ tours, toursLoading, userRole, showToast, setBookingM
 
               <div className="flex-1 space-y-3 mt-4">
                 {tour.concerts?.map((c, i) => {
-                  const capacity = c.venue?.capacity || 1;
-                  const pct = Math.max(0, Math.min(100, (c.availableTickets / capacity) * 100));
+                  // const capacity = c.venue?.capacity || 1;
+                  // const pct = Math.max(0, Math.min(100, (c.availableTickets / capacity) * 100));
                   const soldOut = c.availableTickets === 0 || c.status === "Sold Out";
 
                   return (
@@ -364,18 +364,12 @@ const TicketOfficeTab = ({ tours, toursLoading, userRole, showToast, setBookingM
                         <p className="text-violet-300 font-bold text-sm">${c.ticketPrice}</p>
                       </div>
 
-                      {/* Availability bar */}
-                      <div className="mb-3">
-                        <div className="flex justify-between text-xs text-white/30 mb-1">
-                          <span>{c.availableTickets?.toLocaleString()} left</span>
-                          <span>{Math.round(pct)}% available</span>
-                        </div>
-                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${pct > 40 ? "bg-emerald-500" : pct > 10 ? "bg-amber-500" : "bg-rose-500"}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
+                      {/* SEAT QUANTITY TEXT VIEW */}
+                      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs mb-4">
+                        <span className="text-white/40">Seats available</span>
+                        <span className="text-violet-400 font-bold font-mono">
+                          {c.availableTickets?.toLocaleString()} 
+                        </span>
                       </div>
 
                       <button
@@ -611,9 +605,9 @@ const ManagerInsightsTab = ({ userRole, setUserRole, showToast, fetchTours }) =>
       // 1. Refresh the main tour state so available tickets & capacity counts update instantly!
       if (typeof fetchTours === "function") {
         fetchTours();
-      } else {
-        // Fallback context refresh if called within isolated tab props
-        window.location.reload(); 
+      // } else {
+      //   // Fallback context refresh if called within isolated tab props
+      //   window.location.reload(); 
       }
 
       fetchData();

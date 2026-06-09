@@ -173,7 +173,7 @@ router.delete('/tickets/:ticketId', async (req, res) => {
       const tour = await Tour.findById(ticket.tour).session(session);
 
       if (tour) {
-        const concert = tour.concerts.id(ticket.concertId);
+        const concert = tour.concerts.find(c => c.concertId.toString() === ticket.concertId.toString());
         if (concert) {
           concert.availableTickets += 1;
           // If it was Sold Out, open it back up
