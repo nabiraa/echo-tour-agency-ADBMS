@@ -20,13 +20,14 @@ Before running this project, ensure you have **Node.js** and **npm** installed.
       PORT=5000
       (string provided)
       
-### 2. Backend Setup
+### 2. Backend Setup in a Seperate Terminal
 1. Navigate to the backend directory:
    Run the following commands:
       1. cd backend
       2. npm install
       3. node seedMore.js
-### 3. Frontend Setup
+      4. node server.js
+### 3. Frontend Setup in a Seperate Terminal
 1. Navigate to the frontend directory:
    Run the following commands:
       1. cd frontend
