@@ -32,12 +32,14 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('🚀 Connected to MongoDB Atlas successfully!'))
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
-mongoose.set('debug', true);  // Enable Mongoose debug mode to log all queries for development
+mongoose.set('debug', true);  
+// ^ Enables Mongoose debug mode to log all queries in the terminal while running
 
 // Log mongoose connection events
 mongoose.connection.on('connected', () => {
   console.log('✅ MongoDB connected.');
 });
+
 // Log mongoose connection events after initial connect
 mongoose.connection.on('disconnected', () => {
   console.warn('⚠️  MongoDB disconnected. Reconnecting...');
@@ -89,7 +91,7 @@ app.use((req, res) => {
 // Must be the very last app.use() call.
 // ─────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('🔥 Unhandled error:', err.stack);
+  console.error('!!! Unhandled error:', err.stack);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'An unexpected server error occurred.'

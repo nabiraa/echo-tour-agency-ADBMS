@@ -749,8 +749,35 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
   const axiosConfig = useMemo(() => ({ headers: { "x-user-role": userRole } }), [userRole]);
 
   // Add Tour form state
-  const [form, setForm] = useState({ title: "", year: new Date().getFullYear(), artist: "", status: "Upcoming" });
+  const [form, setForm] = useState({ 
+    title: "", 
+    year: new Date().getFullYear(), 
+    artist: "", 
+    status: "Upcoming",
+    concerts: [{ 
+      date: "", venue: "", ticketPrice: 0, availableTickets: 0, status: "Scheduled", setlist: []
+    }] 
+  });
   const [formLoading, setFormLoading] = useState(false);
+
+  // Helper to quickly handle nested data changes inside the concert array object
+  const handleConcertChange = (field, value) => {
+    setForm((p) => {
+      const updatedConcerts = [...p.concerts];
+      updatedConcerts[0] = { ...updatedConcerts[0], [field]: value };
+      return { ...p, concerts: updatedConcerts };
+    });
+  };
+
+  // Helper to handle text/comma separation for setlist generation inside the form
+  const handleSetlistChange = (textValue) => {
+    const songsArray = textValue.split(",").map(song => song.trim()).filter(Boolean);
+    setForm((p) => {
+      const updatedConcerts = [...p.concerts];
+      updatedConcerts[0] = { ...updatedConcerts[0], setlist: songsArray };
+      return { ...p, concerts: updatedConcerts };
+    });
+  };
 
   // Edit state per tour
   const [editingStatus, setEditingStatus] = useState({});
@@ -761,11 +788,28 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
       showToast("Tour title and Artist ID are required.", "error");
       return;
     }
+    if (!form.concerts[0].venue) {
+      showToast("A valid Venue ObjectId is required for the initial concert stop.", "error");
+      return;
+    }
+    if (!form.concerts[0].date) {
+      showToast("Please pick a valid concert date.", "error");
+      return;
+    }
+
     setFormLoading(true);
     try {
       await axios.post(`${BASE_URL}/api/tours`, form, axiosConfig);
-      showToast("Tour created successfully!", "success");
-      setForm({ title: "", year: new Date().getFullYear(), artist: "", status: "Upcoming" });
+      showToast("Tour created successfully with embedded concert stops! 🎉", "success");
+      
+      // Reset state completely back to an empty template structure
+      setForm({
+        title: "",
+        year: new Date().getFullYear(),
+        artist: "",
+        status: "Upcoming",
+        concerts: [{ venue: "", date: "", ticketPrice: 150, availableTickets: 20000, status: "Scheduled", setlist: [] }]
+      });
       fetchTours();
     } catch (err) {
       showToast(err?.response?.data?.message || "Failed to create tour.", "error");
@@ -808,6 +852,7 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
       </div>
 
       {/* Add New Tour */}
+      {/* Add New Tour Form UI Layout */}
       <div className="bg-white/4 border border-white/10 rounded-3xl p-8 mb-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 bg-violet-600/20 rounded-xl flex items-center justify-center">
@@ -817,28 +862,39 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {[
-            { key: "title", label: "Tour Title", placeholder: "e.g. SYNK: PARALLEL LINE", type: "text" },
-            { key: "year", label: "Year", placeholder: "2026", type: "number" },
-            { key: "artist", label: "Artist ID", placeholder: "MongoDB ObjectId of the artist", type: "text" },
-          ].map(({ key, label, placeholder, type }) => (
-            <div key={key} className={key === "artist" ? "md:col-span-2" : ""}>
-              <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">{label}</label>
-              <input
-                type={type}
-                placeholder={placeholder}
-                value={form[key]}
-                onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
-              />
-              {key === "artist" && (
-                <p className="text-white/25 text-xs mt-1.5">Use the MongoDB ObjectId of the artist from your database</p>
-              )}
-            </div>
-          ))}
-
+          {/* Metadata Rows */}
           <div>
-            <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Status</label>
+            <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Tour Title</label>
+            <input
+              type="text"
+              placeholder="e.g. DOMINATE World Tour"
+              value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Tour Year</label>
+            <input
+              type="number"
+              placeholder="2026"
+              value={form.year}
+              onChange={(e) => setForm((p) => ({ ...p, year: Number(e.target.value) }))}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Artist Object ID</label>
+            <input
+              type="text"
+              placeholder="Paste MongoDB Artist ID string here"
+              value={form.artist}
+              onChange={(e) => setForm((p) => ({ ...p, artist: e.target.value }))}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Overall Tour Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
@@ -848,6 +904,59 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
+          </div>
+
+          {/* 🎫 NESTED CONCERT SUB-DOCUMENT ROW CONFIGURATION */}
+          <div className="md:col-span-2 border-t border-white/5 pt-5 mt-2">
+            <h4 className="text-violet-400 text-sm font-bold uppercase tracking-wider mb-4">Initial Concert Stop Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Venue Object ID</label>
+                <input
+                  type="text"
+                  placeholder="Paste MongoDB Venue ID string here"
+                  value={form.concerts[0].venue}
+                  onChange={(e) => handleConcertChange("venue", e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Concert Show Date</label>
+                <input
+                  type="datetime-local"
+                  value={form.concerts[0].date}
+                  onChange={(e) => handleConcertChange("date", e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all text-sm cursor-pointer"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Ticket Price ($)</label>
+                <input
+                  type="number"
+                  value={form.concerts[0].ticketPrice}
+                  onChange={(e) => handleConcertChange("ticketPrice", Number(e.target.value))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Total Tickets / Capacity Available</label>
+                <input
+                  type="number"
+                  value={form.concerts[0].availableTickets}
+                  onChange={(e) => handleConcertChange("availableTickets", Number(e.target.value))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-white/40 text-xs uppercase tracking-wider font-semibold mb-2">Setlist (Comma separated songs)</label>
+                <input
+                  type="text"
+                  placeholder="Song A, Song B, Song C"
+                  onChange={(e) => handleSetlistChange(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500/50 transition-all text-sm"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -859,7 +968,7 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
           {formLoading ? <><Loader2 size={15} className="animate-spin" /> Creating...</> : <><Plus size={15} /> Create Tour</>}
         </button>
       </div>
-
+      
       {/* Manage Existing Tours */}
       <div className="bg-white/4 border border-white/10 rounded-3xl p-8">
         <div className="flex items-center gap-3 mb-6">
