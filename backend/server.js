@@ -32,7 +32,12 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('🚀 Connected to MongoDB Atlas successfully!'))
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+mongoose.set('debug', true);  // Enable Mongoose debug mode to log all queries for development
 
+// Log mongoose connection events
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connected.');
+});
 // Log mongoose connection events after initial connect
 mongoose.connection.on('disconnected', () => {
   console.warn('⚠️  MongoDB disconnected. Reconnecting...');
