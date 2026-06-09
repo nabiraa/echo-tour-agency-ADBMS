@@ -578,7 +578,7 @@ const LockScreen = ({ setUserRole }) => (
 
 // ─── TAB 4: MANAGER INSIGHTS ─────────────────────────────────────────────────
 
-const ManagerInsightsTab = ({ userRole, setUserRole, showToast }) => {
+const ManagerInsightsTab = ({ userRole, setUserRole, showToast, fetchTours }) => {
   const [analytics, setAnalytics] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -603,9 +603,19 @@ const ManagerInsightsTab = ({ userRole, setUserRole, showToast }) => {
   useEffect(() => { if (userRole === "manager") fetchData(); }, [userRole, fetchData]);
 
   const handleRefund = async (ticketId) => {
+    if (!window.confirm("Confirm full refund for ticket? ")) return;
     try {
       await axios.delete(`${BASE_URL}/api/admin/tickets/${ticketId}`, axiosConfig);
       showToast("Ticket refunded and seat restored.", "success");
+
+      // 1. Refresh the main tour state so available tickets & capacity counts update instantly!
+      if (typeof fetchTours === "function") {
+        fetchTours();
+      } else {
+        // Fallback context refresh if called within isolated tab props
+        window.location.reload(); 
+      }
+
       fetchData();
     } catch (err) {
       showToast(err?.response?.data?.message || "Refund failed.", "error");
@@ -968,7 +978,7 @@ const ControlPanelTab = ({ userRole, setUserRole, showToast, tours, fetchTours }
           {formLoading ? <><Loader2 size={15} className="animate-spin" /> Creating...</> : <><Plus size={15} /> Create Tour</>}
         </button>
       </div>
-      
+
       {/* Manage Existing Tours */}
       <div className="bg-white/4 border border-white/10 rounded-3xl p-8">
         <div className="flex items-center gap-3 mb-6">
@@ -1225,6 +1235,7 @@ export default function App() {
               userRole={userRole}
               setUserRole={setUserRole}
               showToast={showToast}
+              fetchTours={fetchTours}
             />
           )}
           {activeTab === "panel" && (

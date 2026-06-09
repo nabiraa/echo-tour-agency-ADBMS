@@ -132,7 +132,8 @@ router.post('/:tourId/concerts/:concertId/book', async (req, res) => {
       const tour = await Tour.findById(tourId).session(session);
       if (!tour) throw new Error('TOUR_NOT_FOUND');
 
-      const concert = tour.concerts.id(concertId);
+      // const concert = tour.concerts.id(concertId);
+      const concert = tour.concerts.find(c => c.concertId.toString() === concertId);
       if (!concert) throw new Error('CONCERT_NOT_FOUND');
       if (concert.availableTickets <= 0) throw new Error('SOLD_OUT');
 
