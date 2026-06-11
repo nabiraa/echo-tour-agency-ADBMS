@@ -168,7 +168,7 @@ const seedDatabase = async () => {
             concertId: cId3,
             venue: venues.find(v => v.name === 'KSPO Dome')._id,
             date: new Date('2026-07-15T19:00:00Z'),
-            availableTickets: 120, // Low inventory to let fans buy out during validation
+            availableTickets: 120, 
             ticketPrice: 150,
             status: 'Scheduled',
             setlist: ['Attention', 'Hype Boy', 'Ditto', 'OMG', 'Super Shy', 'How Sweet'],

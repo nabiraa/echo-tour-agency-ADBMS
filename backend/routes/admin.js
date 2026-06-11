@@ -39,7 +39,7 @@ router.use(requireManager);
 router.get('/analytics', async (req, res) => {
   try {
     const analyticsData = await Ticket.aggregate([
-      // 1. CRITICAL BUGFIX: Only aggregate data from confirmed, active tickets!
+      // 1. Only aggregate data from confirmed, active tickets
       {
         $match: {
           status: "Confirmed"

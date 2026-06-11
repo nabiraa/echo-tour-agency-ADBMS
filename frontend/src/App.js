@@ -180,9 +180,9 @@ const HomeTab = ({ tours, toursLoading, setActiveTab, userRole }) => {
           }}
         />
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-28 md:py-40">
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-violet-300 text-xs font-semibold uppercase tracking-widest mb-8">
+          {/* <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-violet-300 text-xs font-semibold uppercase tracking-widest mb-8">
             <Sparkles size={12} /> World Tour Management Platform
-          </div>
+          </div> */}
           <h1
             className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-none tracking-tight"
             style={{ textShadow: "0 0 80px rgba(139,92,246,0.4)" }}
@@ -559,14 +559,14 @@ const LockScreen = ({ setUserRole }) => (
     </div>
     <h2 className="text-2xl font-bold text-white mb-2">Manager Access Only</h2>
     <p className="text-white/40 text-sm max-w-xs mb-8">
-      Switch to Agency Manager mode using the session switcher in the top right.
+      Log in as manager for access.
     </p>
-    <button
+    {/* <button
       onClick={() => setUserRole("manager")}
       className="bg-violet-600 hover:bg-violet-500 text-white font-bold px-8 py-3 rounded-full transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-violet-500/30 cursor-pointer"
     >
       Switch to Manager
-    </button>
+    </button> */}
   </div>
 );
 
