@@ -12,7 +12,6 @@ const VenueSchema = new mongoose.Schema({
   }
 });
 
-// Creates the geospatial index needed for your advanced evaluation criteria
 VenueSchema.index({ location: "2dsphere" }); 
 
 module.exports = mongoose.model('Venue', VenueSchema);
