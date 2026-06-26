@@ -31,5 +31,8 @@ Before running this project, ensure you have **Node.js** and **npm** installed.
 1. Navigate to the frontend directory:
    Run the following commands:
       1. cd frontend
-      2. npm start
+      2. npm install
+      3. npm start
+
+The webpage will open up in your browser. 
    
